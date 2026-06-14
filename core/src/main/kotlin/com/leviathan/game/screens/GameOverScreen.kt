@@ -3,9 +3,10 @@ package com.leviathan.game.screens
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.Pixmap
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.leviathan.game.LeviathanGame
 import com.leviathan.game.network.*
@@ -16,7 +17,7 @@ class GameOverScreen(
     private val reason: String
 ) : GameScreen {
     private lateinit var batch: SpriteBatch
-    private lateinit var shape: ShapeRenderer
+    private lateinit var whiteTex: Texture
     private lateinit var font: BitmapFont
     private lateinit var cam: OrthographicCamera
     private val buttons = mutableListOf<MenuScreen.ButtonDef>()
@@ -26,7 +27,11 @@ class GameOverScreen(
 
     override fun show() {
         batch = SpriteBatch()
-        shape = ShapeRenderer()
+        val pixmap = Pixmap(1, 1, Pixmap.Format.RGBA8888)
+        pixmap.setColor(1f, 1f, 1f, 1f)
+        pixmap.fill()
+        whiteTex = Texture(pixmap)
+        pixmap.dispose()
         font = BitmapFont()
         cam = OrthographicCamera(sw, sh)
         cam.setToOrtho(false)
@@ -49,16 +54,17 @@ class GameOverScreen(
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
         cam.update()
-        shape.projectionMatrix = cam.combined
         batch.projectionMatrix = cam.combined
 
         val bh = (sh * 0.08f).coerceIn(50f, 65f)
 
-        shape.begin(ShapeRenderer.ShapeType.Filled)
-        buttons.forEach { shape.setColor(0.15f, 0.4f, 0.8f, 0.9f); shape.rect(it.rect.x, it.rect.y, it.rect.width, it.rect.height) }
-        shape.end()
-
         batch.begin()
+
+        buttons.forEach {
+            batch.setColor(0.15f, 0.4f, 0.8f, 0.9f)
+            batch.draw(whiteTex, it.rect.x, it.rect.y, it.rect.width, it.rect.height)
+        }
+
         font.data.setScale(sh / 200f)
         val winText = if (winner == game.playerRole) "VICTORY!" else "DEFEAT"
         font.draw(batch, winText, sw / 2f - 90f, sh - 100f)
@@ -85,5 +91,5 @@ class GameOverScreen(
     override fun pause() {}
     override fun resume() {}
     override fun hide() {}
-    override fun dispose() { batch.dispose(); shape.dispose(); font.dispose() }
+    override fun dispose() { batch.dispose(); whiteTex.dispose(); font.dispose() }
 }

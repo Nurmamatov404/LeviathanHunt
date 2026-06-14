@@ -1,19 +1,19 @@
 package com.leviathan.game.screens
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.Pixmap
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.leviathan.game.LeviathanGame
 import com.leviathan.game.network.*
 
 class LobbyScreen(private val game: LeviathanGame) : GameScreen {
     private lateinit var batch: SpriteBatch
-    private lateinit var shape: ShapeRenderer
+    private lateinit var whiteTex: Texture
     private lateinit var font: BitmapFont
     private lateinit var cam: OrthographicCamera
 
@@ -28,7 +28,11 @@ class LobbyScreen(private val game: LeviathanGame) : GameScreen {
 
     override fun show() {
         batch = SpriteBatch()
-        shape = ShapeRenderer()
+        val pixmap = Pixmap(1, 1, Pixmap.Format.RGBA8888)
+        pixmap.setColor(1f, 1f, 1f, 1f)
+        pixmap.fill()
+        whiteTex = Texture(pixmap)
+        pixmap.dispose()
         font = BitmapFont()
         cam = OrthographicCamera(sw, sh)
         cam.setToOrtho(false)
@@ -76,19 +80,14 @@ class LobbyScreen(private val game: LeviathanGame) : GameScreen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
         cam.update()
-        shape.projectionMatrix = cam.combined
         batch.projectionMatrix = cam.combined
 
         val bh = (sh * 0.08f).coerceIn(45f, 65f)
 
-        shape.begin(ShapeRenderer.ShapeType.Filled)
-
-        // Role indicators
-        val shipSel = (selectedRole == PlayerRole.SHIP) to Color(0.2f, 0.6f, 0.2f, 0.9f)
-        val monSel = (selectedRole == PlayerRole.MONSTER) to Color(0.8f, 0.2f, 0.2f, 0.9f)
+        batch.begin()
 
         (buttons + listOf(
-            menuBtnDef("ROLE: $selectedRole", Rectangle(sw/4f, sh - 120f, sw/2f, bh/1.5f)) {} // dummy for display
+            menuBtnDef("ROLE: $selectedRole", Rectangle(sw/4f, sh - 120f, sw/2f, bh/1.5f)) {}
         )).forEach { btn ->
             val isShipRole = btn.text.contains("SHIP")
             val isMonRole = btn.text.contains("MONSTER")
@@ -96,16 +95,14 @@ class LobbyScreen(private val game: LeviathanGame) : GameScreen {
             val isSelected = (isShipRole && selectedRole == PlayerRole.SHIP) ||
                             (isMonRole && selectedRole == PlayerRole.MONSTER)
             if (isRoleBtn && isSelected)
-                shape.setColor(0.3f, 0.7f, 0.3f, 0.9f)
+                batch.setColor(0.3f, 0.7f, 0.3f, 0.9f)
             else if (isRoleBtn)
-                shape.setColor(0.3f, 0.3f, 0.3f, 0.7f)
+                batch.setColor(0.3f, 0.3f, 0.3f, 0.7f)
             else
-                shape.setColor(0.15f, 0.4f, 0.8f, 0.9f)
-            shape.rect(btn.rect.x, btn.rect.y, btn.rect.width, btn.rect.height)
+                batch.setColor(0.15f, 0.4f, 0.8f, 0.9f)
+            batch.draw(whiteTex, btn.rect.x, btn.rect.y, btn.rect.width, btn.rect.height)
         }
-        shape.end()
 
-        batch.begin()
         font.data.setScale(sh / 300f)
         font.draw(batch, "LOBBY", sw / 2f - 60f, sh - 40f)
         font.data.setScale(bh / 30f)
@@ -142,5 +139,5 @@ class LobbyScreen(private val game: LeviathanGame) : GameScreen {
     override fun pause() {}
     override fun resume() {}
     override fun hide() {}
-    override fun dispose() { batch.dispose(); shape.dispose(); font.dispose() }
+    override fun dispose() { batch.dispose(); whiteTex.dispose(); font.dispose() }
 }

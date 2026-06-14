@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector3
 import com.leviathan.game.LeviathanGame
 import com.leviathan.game.entities.*
@@ -22,7 +21,6 @@ class GameScreen3D(private val game: LeviathanGame) : GameScreen {
     private lateinit var world: WorldObjects
     private lateinit var hudBatch: SpriteBatch
     private lateinit var hudFont: BitmapFont
-    private lateinit var hudShape: ShapeRenderer
     private lateinit var touch: TouchController
 
     private lateinit var ship: ShipEntity
@@ -51,7 +49,6 @@ class GameScreen3D(private val game: LeviathanGame) : GameScreen {
         hudBatch = SpriteBatch()
         hudFont = BitmapFont()
         hudFont.data.setScale(1.2f)
-        hudShape = ShapeRenderer()
 
         touch = TouchController(game.playerRole).also {
             it.onAction = { action -> handleTouchAction(action) }
@@ -69,7 +66,7 @@ class GameScreen3D(private val game: LeviathanGame) : GameScreen {
         update(delta)
         render3D()
         renderHUD()
-        touch.render(hudShape, hudBatch, hudFont)
+        touch.render(hudBatch, hudFont)
     }
 
     private fun handleInput() {
@@ -426,7 +423,7 @@ class GameScreen3D(private val game: LeviathanGame) : GameScreen {
     override fun pause() {}
     override fun resume() {}
     override fun hide() {}
-    override fun dispose() { hudBatch.dispose(); hudFont.dispose(); hudShape.dispose(); world.dispose() }
+    override fun dispose() { hudBatch.dispose(); hudFont.dispose(); touch.dispose(); world.dispose() }
 }
 
 data class CannonballProjectile(val position: Vector3, val direction: Vector3, var life: Float = 2f)

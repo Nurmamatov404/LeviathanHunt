@@ -4,16 +4,17 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.Pixmap
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 import com.leviathan.game.LeviathanGame
 import com.leviathan.game.network.*
 
 class MenuScreen(private val game: LeviathanGame) : GameScreen {
     private lateinit var batch: SpriteBatch
-    private lateinit var shape: ShapeRenderer
+    private lateinit var whiteTex: Texture
     private lateinit var font: BitmapFont
     private lateinit var cam: OrthographicCamera
 
@@ -31,7 +32,11 @@ class MenuScreen(private val game: LeviathanGame) : GameScreen {
 
     override fun show() {
         batch = SpriteBatch()
-        shape = ShapeRenderer()
+        val pixmap = Pixmap(1, 1, Pixmap.Format.RGBA8888)
+        pixmap.setColor(1f, 1f, 1f, 1f)
+        pixmap.fill()
+        whiteTex = Texture(pixmap)
+        pixmap.dispose()
         font = BitmapFont()
         cam = OrthographicCamera(sw, sh)
         cam.setToOrtho(false)
@@ -78,20 +83,18 @@ class MenuScreen(private val game: LeviathanGame) : GameScreen {
 
         handleInput()
 
-        shape.projectionMatrix = cam.combined
         batch.projectionMatrix = cam.combined
 
         val bw = (sw * 0.6f).coerceIn(200f, 350f)
         val bh = (sh * 0.08f).coerceIn(50f, 70f)
 
-        shape.begin(ShapeRenderer.ShapeType.Filled)
-        buttons.forEach { btn ->
-            shape.setColor(0.15f, 0.4f, 0.8f, 0.9f)
-            shape.rect(btn.rect.x, btn.rect.y, btn.rect.width, btn.rect.height)
-        }
-        shape.end()
-
         batch.begin()
+
+        buttons.forEach { btn ->
+            batch.setColor(0.15f, 0.4f, 0.8f, 0.9f)
+            batch.draw(whiteTex, btn.rect.x, btn.rect.y, btn.rect.width, btn.rect.height)
+        }
+
         font.data.setScale(sh / 300f)
         font.draw(batch, "LEVIATHAN HUNT", sw / 2f - sw * 0.22f, sh - 40f)
         font.data.setScale(sh / 500f)
@@ -107,14 +110,19 @@ class MenuScreen(private val game: LeviathanGame) : GameScreen {
             val inputH = bh * 0.8f
             font.data.setScale(bh / 35f)
             font.draw(batch, "Host IP:", sw / 4f, inputY + 20f)
-            shape.begin(ShapeRenderer.ShapeType.Line)
-            shape.setColor(1f, 1f, 1f, 1f)
-            shape.rect(sw / 4f, inputY - inputH, sw / 2f, inputH)
-            shape.end()
-            shape.begin(ShapeRenderer.ShapeType.Filled)
-            shape.setColor(1f, 1f, 1f, 0.05f)
-            shape.rect(sw / 4f, inputY - inputH, sw / 2f, inputH)
-            shape.end()
+            batch.setColor(1f, 1f, 1f, 0.05f)
+            batch.draw(whiteTex, sw / 4f, inputY - inputH, sw / 2f, inputH)
+            batch.setColor(1f, 1f, 1f, 1f)
+            val lx = sw / 4f
+            val ly = inputY - inputH
+            val lw = sw / 2f
+            val lh = inputH
+            val b = 2f
+            batch.draw(whiteTex, lx, ly, lw, b)
+            batch.draw(whiteTex, lx, ly + lh - b, lw, b)
+            batch.draw(whiteTex, lx, ly, b, lh)
+            batch.draw(whiteTex, lx + lw - b, ly, b, lh)
+            batch.setColor(1f, 1f, 1f, 1f)
             val cursor = if ((System.currentTimeMillis() / 500) % 2 == 0L) "|" else ""
             font.draw(batch, ipAddress + cursor, sw / 4f + 10f, inputY - 5f)
         }
@@ -167,5 +175,5 @@ class MenuScreen(private val game: LeviathanGame) : GameScreen {
     override fun pause() {}
     override fun resume() {}
     override fun hide() {}
-    override fun dispose() { batch.dispose(); shape.dispose(); font.dispose() }
+    override fun dispose() { batch.dispose(); whiteTex.dispose(); font.dispose() }
 }

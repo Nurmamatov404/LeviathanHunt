@@ -2,17 +2,19 @@ package com.leviathan.game.screens
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.InputAdapter
-import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.Pixmap
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
-import com.leviathan.game.network.MonsterAbility
 import com.leviathan.game.network.PlayerRole
 
 class TouchController(private val role: PlayerRole) : InputAdapter() {
+    private val whiteTex: Texture
+    private val circleTex: Texture
+
     data class ButtonDef(
         val id: String,
         val x: Float, val y: Float,
@@ -47,6 +49,18 @@ class TouchController(private val role: PlayerRole) : InputAdapter() {
     var moveZ: Float = 0f
 
     init {
+        val pixmap = Pixmap(1, 1, Pixmap.Format.RGBA8888)
+        pixmap.setColor(1f, 1f, 1f, 1f)
+        pixmap.fill()
+        whiteTex = Texture(pixmap)
+        pixmap.dispose()
+
+        val circlePix = Pixmap(64, 64, Pixmap.Format.RGBA8888)
+        circlePix.setColor(1f, 1f, 1f, 1f)
+        circlePix.fillCircle(32, 32, 32)
+        circleTex = Texture(circlePix)
+        circlePix.dispose()
+
         layoutButtons()
     }
 
@@ -194,57 +208,58 @@ class TouchController(private val role: PlayerRole) : InputAdapter() {
         joystickOutput.limit(1f)
     }
 
-    fun render(shape: ShapeRenderer, batch: SpriteBatch, font: BitmapFont) {
+    fun render(batch: SpriteBatch, font: BitmapFont) {
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
 
+        batch.begin()
+
         // Joystick
-        shape.begin(ShapeRenderer.ShapeType.Filled)
-        shape.setColor(1f, 1f, 1f, 0.2f)
-        shape.circle(joystickCenter.x, joystickCenter.y, joystickRadius)
-        shape.setColor(1f, 1f, 1f, 0.4f)
-        shape.circle(joystickCenter.x, joystickCenter.y, joystickBgRadius)
-        shape.setColor(1f, 1f, 1f, 0.6f)
-        shape.circle(joystickKnobPos.x, joystickKnobPos.y, joystickKnobRadius)
-        shape.end()
+        batch.setColor(1f, 1f, 1f, 0.2f)
+        batch.draw(circleTex, joystickCenter.x - joystickRadius, joystickCenter.y - joystickRadius, joystickRadius * 2, joystickRadius * 2)
+        batch.setColor(1f, 1f, 1f, 0.4f)
+        batch.draw(circleTex, joystickCenter.x - joystickBgRadius, joystickCenter.y - joystickBgRadius, joystickBgRadius * 2, joystickBgRadius * 2)
+        batch.setColor(1f, 1f, 1f, 0.6f)
+        batch.draw(circleTex, joystickKnobPos.x - joystickKnobRadius, joystickKnobPos.y - joystickKnobRadius, joystickKnobRadius * 2, joystickKnobRadius * 2)
 
         // Vertical indicator for monster
         if (role == PlayerRole.MONSTER) {
-            shape.begin(ShapeRenderer.ShapeType.Filled)
-            shape.setColor(1f, 1f, 1f, 0.15f)
             val vx = Gdx.graphics.width / 2f + 20f
-            shape.rect(vx, 50f, 30f, Gdx.graphics.height - 100f)
+            batch.setColor(1f, 1f, 1f, 0.15f)
+            batch.draw(whiteTex, vx, 50f, 30f, Gdx.graphics.height - 100f)
             val vy = touchPos.y
             if (verticalTouchId >= 0) {
-                shape.setColor(0.3f, 0.7f, 1f, 0.5f)
-                shape.rect(vx, vy - 20f, 30f, 40f)
+                batch.setColor(0.3f, 0.7f, 1f, 0.5f)
+                batch.draw(whiteTex, vx, vy - 20f, 30f, 40f)
             }
-            shape.end()
         }
 
         // Buttons
-        shape.begin(ShapeRenderer.ShapeType.Filled)
         buttons.forEach { btn ->
             if (btn.isPressed) {
-                shape.setColor(0.3f, 0.8f, 1f, 0.9f)
+                batch.setColor(0.3f, 0.8f, 1f, 0.9f)
             } else {
-                shape.setColor(1f, 1f, 1f, 0.25f)
+                batch.setColor(1f, 1f, 1f, 0.25f)
             }
-            shape.circle(btn.x, btn.y, btn.radius)
-            shape.setColor(1f, 1f, 1f, 0.08f)
-            shape.circle(btn.x, btn.y, btn.radius + 3f)
+            batch.draw(circleTex, btn.x - btn.radius, btn.y - btn.radius, btn.radius * 2, btn.radius * 2)
+            batch.setColor(1f, 1f, 1f, 0.08f)
+            batch.draw(circleTex, btn.x - btn.radius - 3f, btn.y - btn.radius - 3f, (btn.radius + 3f) * 2, (btn.radius + 3f) * 2)
         }
-        shape.end()
 
         // Button labels
-        batch.begin()
         font.data.setScale(0.6f)
         buttons.forEach { btn ->
-            val labelW = font.draw(batch, btn.label, btn.x - 15f, btn.y + 5f).width
+            font.draw(batch, btn.label, btn.x - 15f, btn.y + 5f)
         }
+
         batch.end()
 
         Gdx.gl.glDisable(GL20.GL_BLEND)
+    }
+
+    fun dispose() {
+        whiteTex.dispose()
+        circleTex.dispose()
     }
 
     fun resize(width: Int, height: Int) {
