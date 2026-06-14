@@ -8,3 +8,4 @@ local.properties
 *.aab
 .DS_Store
 Thumbs.db
+android/src/main/jniLibs/
