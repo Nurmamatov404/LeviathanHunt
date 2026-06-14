@@ -125,7 +125,7 @@ class CheckersGame {
     ): List<CheckersMove> {
         val jumps = mutableListOf<CheckersMove>()
         val piece = board[row][col]
-        val dirs = getMoveDirections(piece, forward)
+        val dirs = listOf(-1 to -1, -1 to 1, 1 to -1, 1 to 1)
         val opponent = getOpponent(player)
 
         for ((dr, dc) in dirs) {
