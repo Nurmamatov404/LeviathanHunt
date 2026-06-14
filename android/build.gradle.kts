@@ -66,14 +66,13 @@ tasks.register("copyNatives") {
         val jniLibs = file("src/main/jniLibs")
         jniLibs.mkdirs()
         configurations.named("natives").get().files.forEach { jar ->
+            val abi = jar.name.substringAfterLast("natives-").substringBefore(".jar")
+            val targetDir = file("$jniLibs/$abi")
+            targetDir.mkdirs()
             copy {
                 from(zipTree(jar))
-                into(jniLibs)
-                include("lib/**")
-                eachFile {
-                    path = path.removePrefix("lib/")
-                }
-                includeEmptyDirs = false
+                into(targetDir)
+                include("**/*.so")
             }
         }
     }
