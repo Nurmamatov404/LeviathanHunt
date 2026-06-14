@@ -149,8 +149,8 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
             BGScreen.GAME_LIST -> drawGameList()
         }
         batch.end()
-        buttons.clear()
         handleInput()
+        buttons.clear()
     }
 
     private fun updateParticles(delta: Float) {
