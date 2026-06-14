@@ -149,6 +149,7 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
             BGScreen.GAME_LIST -> drawGameList()
         }
         batch.end()
+        buttons.clear()
         handleInput()
     }
 
@@ -522,7 +523,6 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
     }
 
     private fun handleInput() {
-        buttons.clear()
         val bw = (sw * 0.5f).coerceIn(200f, 300f)
         val bh = (sh * 0.06f).coerceIn(38f, 50f)
 
@@ -531,24 +531,16 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
             if (Gdx.input.justTouched()) {
                 val mx = Gdx.input.x.toFloat()
                 val my = sh - Gdx.input.y.toFloat()
-                typingName = nameRect.contains(mx, my)
-            }
-            if (typingName) {
-                if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE) && playerName.isNotEmpty())
-                    playerName = playerName.dropLast(1)
-                val keyCodes = mapOf(
-                    'A' to Input.Keys.A, 'B' to Input.Keys.B, 'C' to Input.Keys.C, 'D' to Input.Keys.D,
-                    'E' to Input.Keys.E, 'F' to Input.Keys.F, 'G' to Input.Keys.G, 'H' to Input.Keys.H,
-                    'I' to Input.Keys.I, 'J' to Input.Keys.J, 'K' to Input.Keys.K, 'L' to Input.Keys.L,
-                    'M' to Input.Keys.M, 'N' to Input.Keys.N, 'O' to Input.Keys.O, 'P' to Input.Keys.P,
-                    'Q' to Input.Keys.Q, 'R' to Input.Keys.R, 'S' to Input.Keys.S, 'T' to Input.Keys.T,
-                    'U' to Input.Keys.U, 'V' to Input.Keys.V, 'W' to Input.Keys.W, 'X' to Input.Keys.X,
-                    'Y' to Input.Keys.Y, 'Z' to Input.Keys.Z
-                )
-                for ((c, key) in keyCodes) {
-                    if (Gdx.input.isKeyJustPressed(key) && playerName.length < 15) playerName += c
+                val tapped = nameRect.contains(mx, my)
+                if (tapped && !typingName) {
+                    typingName = true
+                    Gdx.input.getTextInput(object : com.badlogic.gdx.Input.TextInputListener {
+                        override fun input(text: String) { playerName = text.take(15); typingName = false }
+                        override fun canceled() { typingName = false }
+                    }, "Enter your name", playerName, "")
+                } else if (!tapped) {
+                    typingName = false
                 }
-                if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && playerName.length < 15) playerName += " "
             }
         }
 
