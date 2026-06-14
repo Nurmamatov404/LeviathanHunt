@@ -119,7 +119,7 @@ class LobbyScreen(private val game: LeviathanGame) : GameScreen {
         if (Gdx.input.justTouched()) {
             val mx = Gdx.input.x.toFloat()
             val my = sh - Gdx.input.y.toFloat()
-            buttons.forEach { if (it.rect.contains(mx, my)) it.action() }
+            buttons.toList().forEach { if (it.rect.contains(mx, my)) it.action() }
         }
     }
 

@@ -165,7 +165,7 @@ class MenuScreen(private val game: LeviathanGame) : GameScreen {
                 }
             }
 
-            buttons.forEach { if (it.rect.contains(mx, my)) it.action() }
+            buttons.toList().forEach { if (it.rect.contains(mx, my)) it.action() }
         }
     }
 
