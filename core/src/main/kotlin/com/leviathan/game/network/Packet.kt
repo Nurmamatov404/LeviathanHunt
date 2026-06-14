@@ -147,5 +147,5 @@ object PacketSerializer {
         }
     }
 
-    internal class JsonTypePacket(@PublishedApi internal val type: PacketType)
+    class JsonTypePacket(@PublishedApi internal val type: PacketType)
 }
