@@ -30,6 +30,8 @@ class CheckersScreen(
     private lateinit var cam: OrthographicCamera
     private val layout = GlyphLayout()
 
+    private fun fw(text: CharSequence): Float { layout.setText(font, text); return layout.width }
+
     private val checkersGame = CheckersGame()
     private var state = CheckersGame.newState()
     private var selectedRow = -1
@@ -322,7 +324,7 @@ class CheckersScreen(
             font.data.setScale(sh / 140f)
             val glow = sin(time * 3f) * 0.15f + 0.85f
             font.setColor(resultColor.r * glow, resultColor.g * glow, resultColor.b * glow, 1f)
-            font.draw(batch, resultText, cx - layout.setText(font, resultText).width / 2, sh * 0.6f)
+            font.draw(batch, resultText, cx - fw(resultText) / 2, sh * 0.6f)
 
             if (gameResult.isNotEmpty()) {
                 font.data.setScale(sh / 300f)
@@ -335,7 +337,7 @@ class CheckersScreen(
             font.data.setScale(sh / 320f)
             font.setColor(0.6f, 0.6f, 0.7f, 0.7f)
             val statsText = "Remaining — Red: $rCnt  Black: $bCnt"
-            font.draw(batch, statsText, cx - layout.setText(font, statsText).width / 2, sh * 0.47f)
+            font.draw(batch, statsText, cx - fw(statsText) / 2, sh * 0.47f)
 
             drawBtn("▶ PLAY AGAIN", cx - bw / 2, sh * 0.33f, bw, bh, Color(0.2f, 0.75f, 0.3f, 0.95f))
             drawBtn("← MAIN MENU", cx - bw / 2, sh * 0.33f - gap, bw, bh, Color(0.7f, 0.2f, 0.2f, 0.95f))
@@ -351,7 +353,7 @@ class CheckersScreen(
         batch.draw(whiteTex, x, y + h / 2f, w, h / 2f)
         font.data.setScale(h / 28f)
         font.setColor(1f, 1f, 1f, 1f)
-        val tw = layout.setText(font, text).width
+        val tw = fw(text)
         font.draw(batch, text, x + w / 2 - tw / 2, y + h * 0.62f)
 
         val isPlayAgain = text.contains("PLAY AGAIN")

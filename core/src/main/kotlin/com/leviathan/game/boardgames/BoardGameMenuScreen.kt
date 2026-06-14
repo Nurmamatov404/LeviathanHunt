@@ -55,6 +55,9 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
     private var time = 0f
     private val layout = GlyphLayout()
 
+    private fun fw(text: CharSequence): Float { layout.setText(font, text); return layout.width }
+    private fun tfw(text: CharSequence): Float { layout.setText(titleFont, text); return layout.width }
+
     private val stars = mutableListOf<Star>()
     private val particles = mutableListOf<Particle>()
     private var particleTimer = 0f
@@ -208,8 +211,7 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
     private fun drawTitle(text: String, x: Float, y: Float) {
         val scale = sh / 220f
         titleFont.data.setScale(scale)
-        layout.setText(titleFont, text)
-        val w = layout.width
+        val w = tfw(text)
 
         titleFont.setColor(0f, 0f, 0f, 0.3f)
         titleFont.draw(batch, text, x - w / 2 + 3f, y - 3f)
@@ -225,7 +227,7 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
     private fun drawSubTitle(text: String, x: Float, y: Float) {
         font.data.setScale(sh / 500f)
         font.setColor(0.7f, 0.7f, 0.9f, 0.6f)
-        val w = layout.setText(font, text).width
+        val w = fw(text)
         font.draw(batch, text, x - w / 2, y)
     }
 
@@ -262,7 +264,7 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
         if (statusMsg.isNotEmpty()) {
             font.data.setScale(bh / 32f)
             font.setColor(gold.r, gold.g, gold.b, (sin(time * 3f) * 0.2f + 0.8f))
-            font.draw(batch, statusMsg, cx - layout.setText(font, statusMsg).width / 2, sh * 0.12f)
+            font.draw(batch, statusMsg, cx - fw(statusMsg) / 2, sh * 0.12f)
         }
     }
 
@@ -274,7 +276,7 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
 
         font.data.setScale(bh / 30f)
         font.setColor(gold.r * 0.7f, gold.g * 0.7f, gold.b * 0.7f, 0.8f)
-        font.draw(batch, "PLAYER NAME", cx - layout.setText(font, "PLAYER NAME").width / 2, iy + bh + 18f)
+        font.draw(batch, "PLAYER NAME", cx - fw("PLAYER NAME") / 2, iy + bh + 18f)
 
         batch.setColor(0f, 0f, 0f, 0.4f)
         batch.draw(whiteTex, cx - bw / 2 + 4f, iy - 4f, bw, bh)
@@ -310,7 +312,7 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
             font.setColor(0.7f, 0.7f, 0.9f, 0.7f)
             val dotCount = ((time * 2f).toInt() % 4)
             val dots = ".".repeat(dotCount)
-            font.draw(batch, "Enable hotspot. Waiting$dots", cx - layout.setText(font, "Enable hotspot. Waiting...").width / 2, sh * 0.5f)
+            font.draw(batch, "Enable hotspot. Waiting$dots", cx - fw("Enable hotspot. Waiting...") / 2, sh * 0.5f)
             font.draw(batch, "Game: ${selectedGame.name}", cx - 60f, sh * 0.43f)
 
             val pulse = sin(time * 3f) * 0.3f + 0.7f
@@ -409,24 +411,24 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
 
         font.data.setScale(bh / 26f)
         font.setColor(gold.r, gold.g, gold.b, 1f)
-        font.draw(batch, "✦ CHECKERS", cx - layout.setText(font, "✦ CHECKERS").width / 2, sy)
+        font.draw(batch, "✦ CHECKERS", cx - fw("✦ CHECKERS") / 2, sy)
         font.data.setScale(bh / 30f)
         font.setColor(0.9f, 0.9f, 0.9f, 0.9f)
         val cStats = "Wins: ${cs.wins}   Losses: ${cs.losses}   Draws: ${cs.draws}"
-        font.draw(batch, cStats, cx - layout.setText(font, cStats).width / 2, sy - gap * 0.6f)
+        font.draw(batch, cStats, cx - fw(cStats) / 2, sy - gap * 0.6f)
 
         font.data.setScale(bh / 26f)
         font.setColor(cyan.r, cyan.g, cyan.b, 1f)
-        font.draw(batch, "♚ CHESS", cx - layout.setText(font, "♚ CHESS").width / 2, sy - gap * 1.4f)
+        font.draw(batch, "♚ CHESS", cx - fw("♚ CHESS") / 2, sy - gap * 1.4f)
         font.data.setScale(bh / 30f)
         font.setColor(0.9f, 0.9f, 0.9f, 0.9f)
         val chStats = "Wins: ${chs.wins}   Losses: ${chs.losses}   Draws: ${chs.draws}"
-        font.draw(batch, chStats, cx - layout.setText(font, chStats).width / 2, sy - gap * 2f)
+        font.draw(batch, chStats, cx - fw(chStats) / 2, sy - gap * 2f)
 
         font.data.setScale(bh / 32f)
         font.setColor(0.4f, 0.4f, 0.5f, 0.7f)
         val total = "Total games played: ${cs.total + chs.total}"
-        font.draw(batch, total, cx - layout.setText(font, total).width / 2, sy - gap * 3f)
+        font.draw(batch, total, cx - fw(total) / 2, sy - gap * 3f)
 
         drawGlowButton("✕ BACK", cx - bw / 2, sh * 0.12f, bw, bh, red, Color(1f, 0.5f, 0.5f, 1f)) {
             currentScreen = BGScreen.MAIN
@@ -450,7 +452,7 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
 
         font.data.setScale(h / 28f)
         font.setColor(1f, 1f, 1f, 1f)
-        val tw = layout.setText(font, text).width
+        val tw = fw(text)
         font.draw(batch, text, x + w / 2 - tw / 2, y + h * 0.62f)
 
         buttons.add(ButtonDef(text, Rectangle(x, y, w, h), action))

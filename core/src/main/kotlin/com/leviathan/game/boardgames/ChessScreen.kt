@@ -27,6 +27,8 @@ class ChessScreen(
     private lateinit var cam: OrthographicCamera
     private val layout = GlyphLayout()
 
+    private fun fw(text: CharSequence): Float { layout.setText(font, text); return layout.width }
+
     private val chessGame = ChessGame()
     private var state = ChessGame.newState()
     private var selectedRow = -1
@@ -286,12 +288,12 @@ class ChessScreen(
             font.data.setScale(sh / 140f)
             val glow = (kotlin.math.sin(time * 3f) * 0.15f + 0.85f).toFloat()
             font.setColor(resultColor.r * glow, resultColor.g * glow, resultColor.b * glow, 1f)
-            font.draw(batch, resultText, cx - layout.setText(font, resultText).width / 2, sh * 0.6f)
+            font.draw(batch, resultText, cx - fw(resultText) / 2, sh * 0.6f)
 
             if (state.gameResult != null) {
                 font.data.setScale(sh / 300f)
                 font.setColor(0.8f, 0.8f, 0.8f, 0.7f)
-                font.draw(batch, state.gameResult, cx - layout.setText(font, state.gameResult!!).width / 2, sh * 0.53f)
+                font.draw(batch, state.gameResult, cx - fw(state.gameResult!!) / 2, sh * 0.53f)
             }
 
             drawBtn("▶ PLAY AGAIN", cx - bw / 2, sh * 0.33f, bw, bh, Color(0.2f, 0.75f, 0.3f, 0.95f))
@@ -308,7 +310,7 @@ class ChessScreen(
         batch.draw(whiteTex, x, y + h / 2f, w, h / 2f)
         font.data.setScale(h / 28f)
         font.setColor(1f, 1f, 1f, 1f)
-        val tw = layout.setText(font, text).width
+        val tw = fw(text)
         font.draw(batch, text, x + w / 2 - tw / 2, y + h * 0.62f)
         buttons.add(ButtonDef(text, Rectangle(x, y, w, h), {
             if (text.contains("PLAY AGAIN")) rematch() else game.setScreen(BoardGameMenuScreen(game))
