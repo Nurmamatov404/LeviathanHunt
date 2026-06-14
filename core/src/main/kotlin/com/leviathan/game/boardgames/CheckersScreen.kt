@@ -289,11 +289,14 @@ class CheckersScreen(
                 batch.draw(tex, cx - ds / 2 + ds * 0.12f, cy - ds / 2 + ds * 0.15f + floatOffset, ds * 0.4f, ds * 0.35f)
 
                 if (isKing) {
-                    font.data.setScale(ds * 0.5f)
-                    font.setColor(gold)
-                    val pulse = sin(time * 2f) * 0.1f + 0.9f
-                    batch.setColor(gold.r * pulse, gold.g * pulse, gold.b * pulse, 1f)
-                    font.draw(batch, "♛", cx - ds * 0.22f, cy + ds * 0.22f + floatOffset)
+                    val crownScale = ds * 0.55f / font.capHeight
+                    font.data.setScale(crownScale)
+                    val pulse = sin(time * 3f) * 0.15f + 0.85f
+                    font.setColor(gold.r * pulse, gold.g * pulse, gold.b * pulse, 1f)
+                    font.draw(batch, "★", cx - ds * 0.2f, cy + ds * 0.25f + floatOffset)
+                    font.data.setScale(crownScale * 0.7f)
+                    font.setColor(1f, 1f, 1f, 0.6f * pulse)
+                    font.draw(batch, "★", cx - ds * 0.18f, cy + ds * 0.22f + floatOffset)
                 }
             }
         }

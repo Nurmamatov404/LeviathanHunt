@@ -55,9 +55,9 @@ class ChessScreen(
     private val blackPieceCol = Color(0.08f, 0.08f, 0.08f, 1f)
 
     private val pieceChars = mapOf(
-        ChessPieceType.KING to '♚', ChessPieceType.QUEEN to '♛',
-        ChessPieceType.ROOK to '♜', ChessPieceType.BISHOP to '♝',
-        ChessPieceType.KNIGHT to '♞', ChessPieceType.PAWN to '♟'
+        ChessPieceType.KING to 'K', ChessPieceType.QUEEN to 'Q',
+        ChessPieceType.ROOK to 'R', ChessPieceType.BISHOP to 'B',
+        ChessPieceType.KNIGHT to 'N', ChessPieceType.PAWN to 'P'
     )
 
     override fun show() {
@@ -230,32 +230,39 @@ class ChessScreen(
                 val cx = boardX + col * cellSize + cellSize / 2f
                 val cy = boardY + (7 - row) * cellSize + cellSize / 2f
                 val char = pieceChars[piece.type] ?: '?'
-                val size = when (piece.type) {
-                    ChessPieceType.PAWN -> cellSize * 0.52f
-                    ChessPieceType.KNIGHT -> cellSize * 0.58f
-                    else -> cellSize * 0.62f
-                }
-
                 val isWhiteP = piece.isWhite
                 val floatOffset = kotlin.math.sin(time * 1.2f + row * 2.5f + col * 1.7f).toFloat() * 1f
-                val shadowOff = 2f
 
-                font.data.setScale(size)
-                batch.setColor(0f, 0f, 0f, 0.2f)
-                font.draw(batch, char.toString(), cx - size * 0.28f + shadowOff, cy - size * 0.4f - shadowOff + floatOffset)
+                val desiredH = cellSize * 0.55f
+                val scale = desiredH / font.capHeight
+
+                font.data.setScale(scale)
+                val charStr = char.toString()
+                val charW = fw(charStr)
+
+                batch.setColor(0f, 0f, 0f, 0.25f)
+                font.draw(batch, charStr, cx - charW / 2 + 2f, cy - desiredH * 0.3f - 2f + floatOffset)
 
                 if (isWhiteP) {
-                    batch.setColor(0.9f, 0.9f, 0.9f, 1f)
-                    font.draw(batch, char.toString(), cx - size * 0.28f - 1f, cy - size * 0.4f + 1f + floatOffset)
-                    font.draw(batch, char.toString(), cx - size * 0.28f + 1f, cy - size * 0.4f - 1f + floatOffset)
+                    batch.setColor(0.95f, 0.95f, 0.95f, 1f)
+                    font.draw(batch, charStr, cx - charW / 2 - 1f, cy - desiredH * 0.3f + 1f + floatOffset)
+                    font.draw(batch, charStr, cx - charW / 2 + 1f, cy - desiredH * 0.3f - 1f + floatOffset)
                     batch.setColor(whitePieceCol)
-                    font.draw(batch, char.toString(), cx - size * 0.28f, cy - size * 0.4f + floatOffset)
+                    font.draw(batch, charStr, cx - charW / 2, cy - desiredH * 0.3f + floatOffset)
                 } else {
-                    batch.setColor(0.3f, 0.3f, 0.3f, 1f)
-                    font.draw(batch, char.toString(), cx - size * 0.28f - 1f, cy - size * 0.4f + 1f + floatOffset)
-                    font.draw(batch, char.toString(), cx - size * 0.28f + 1f, cy - size * 0.4f - 1f + floatOffset)
+                    batch.setColor(0.2f, 0.2f, 0.2f, 1f)
+                    font.draw(batch, charStr, cx - charW / 2 - 1f, cy - desiredH * 0.3f + 1f + floatOffset)
+                    font.draw(batch, charStr, cx - charW / 2 + 1f, cy - desiredH * 0.3f - 1f + floatOffset)
                     batch.setColor(blackPieceCol)
-                    font.draw(batch, char.toString(), cx - size * 0.28f, cy - size * 0.4f + floatOffset)
+                    font.draw(batch, charStr, cx - charW / 2, cy - desiredH * 0.3f + floatOffset)
+                }
+
+                if (piece.type == ChessPieceType.KING) {
+                    val crownScale = scale * 0.45f
+                    font.data.setScale(crownScale)
+                    val pulse = kotlin.math.sin(time * 3f).toFloat() * 0.15f + 0.85f
+                    font.setColor(1f, 0.85f, 0.2f, pulse)
+                    font.draw(batch, "✦", cx - fw("✦") / 2, cy + desiredH * 0.25f + floatOffset)
                 }
             }
         }

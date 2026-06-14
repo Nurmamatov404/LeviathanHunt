@@ -97,11 +97,15 @@ class CheckersGame {
 
                 if (!state.mustJump && jumps.isEmpty()) {
                     val dirs = getMoveDirections(piece, forward)
+                    val isKing = isKing(piece)
                     for ((dr, dc) in dirs) {
-                        val nr = row + dr
-                        val nc = col + dc
-                        if (nr in 0 until 8 && nc in 0 until 8 && state.board[nr][nc] == CheckersPiece.EMPTY) {
+                        var nr = row + dr
+                        var nc = col + dc
+                        while (nr in 0 until 8 && nc in 0 until 8 && state.board[nr][nc] == CheckersPiece.EMPTY) {
                             moves.add(CheckersMove(row, col, nr, nc))
+                            if (!isKing) break
+                            nr += dr
+                            nc += dc
                         }
                     }
                 }
@@ -125,47 +129,84 @@ class CheckersGame {
         val opponent = getOpponent(player)
 
         for ((dr, dc) in dirs) {
-            val mr = row + dr
-            val mc = col + dc
-            val lr = row + 2 * dr
-            val lc = col + 2 * dc
-
-            if (mr !in 0 until 8 || mc !in 0 until 8) continue
-            if (lr !in 0 until 8 || lc !in 0 until 8) continue
-
-            val midPiece = board[mr][mc]
-            if (!isPlayerPiece(midPiece, opponent)) continue
-            if (board[lr][lc] != CheckersPiece.EMPTY) continue
-            if (visited.contains(mr to mc)) continue
-
-            val newVisited = visited + (mr to mc)
-            val baseMove = CheckersMove(row, col, lr, lc, listOf(mr to mc))
-
-            val newBoard = board.map { it.copyOf() }.toTypedArray()
-            newBoard[row][col] = CheckersPiece.EMPTY
-            var promotedPiece = player
-            if (!isKing(piece)) {
-                if ((player == CheckersPiece.RED && lr == 0) || (player == CheckersPiece.BLACK && lr == 7)) {
-                    promotedPiece = if (player == CheckersPiece.RED) CheckersPiece.RED_KING else CheckersPiece.BLACK_KING
+            if (isKing(piece)) {
+                var step = 1
+                var foundOpp = false
+                var oppRow = -1
+                var oppCol = -1
+                while (true) {
+                    val cr = row + dr * step
+                    val cc = col + dc * step
+                    if (cr !in 0 until 8 || cc !in 0 until 8) break
+                    val cell = board[cr][cc]
+                    if (!foundOpp) {
+                        if (isPlayerPiece(cell, opponent)) {
+                            foundOpp = true; oppRow = cr; oppCol = cc
+                        } else if (cell != CheckersPiece.EMPTY) break
+                    } else {
+                        if (cell == CheckersPiece.EMPTY && !visited.contains(oppRow to oppCol)) {
+                            val newVisited = visited + (oppRow to oppCol)
+                            val capture = oppRow to oppCol
+                            val baseMove = CheckersMove(row, col, cr, cc, listOf(capture))
+                            val newBoard = board.map { it.copyOf() }.toTypedArray()
+                            newBoard[row][col] = CheckersPiece.EMPTY
+                            newBoard[oppRow][oppCol] = CheckersPiece.EMPTY
+                            newBoard[cr][cc] = piece
+                            val furtherJumps = getJumps(newBoard, cr, cc, player, forward, newVisited)
+                            if (furtherJumps.isNotEmpty()) {
+                                for (fj in furtherJumps) {
+                                    jumps.add(CheckersMove(row, col, fj.toRow, fj.toCol, listOf(capture) + fj.captures))
+                                }
+                            } else {
+                                jumps.add(baseMove)
+                            }
+                        } else if (cell != CheckersPiece.EMPTY) break
+                    }
+                    step++
                 }
             } else {
-                promotedPiece = piece
-            }
-            newBoard[lr][lc] = promotedPiece
-            newBoard[mr][mc] = CheckersPiece.EMPTY
+                val mr = row + dr
+                val mc = col + dc
+                val lr = row + 2 * dr
+                val lc = col + 2 * dc
 
-            if (isKing(promotedPiece) != isKing(piece) || (isKing(piece) && promotedPiece == piece)) {
-                val furtherJumps = getJumps(newBoard, lr, lc, player, forward, newVisited)
-                if (furtherJumps.isNotEmpty()) {
-                    for (fj in furtherJumps) {
-                        jumps.add(CheckersMove(row, col, fj.toRow, fj.toCol,
-                            listOf(mr to mc) + fj.captures))
+                if (mr !in 0 until 8 || mc !in 0 until 8) continue
+                if (lr !in 0 until 8 || lc !in 0 until 8) continue
+
+                val midPiece = board[mr][mc]
+                if (!isPlayerPiece(midPiece, opponent)) continue
+                if (board[lr][lc] != CheckersPiece.EMPTY) continue
+                if (visited.contains(mr to mc)) continue
+
+                val newVisited = visited + (mr to mc)
+                val baseMove = CheckersMove(row, col, lr, lc, listOf(mr to mc))
+
+                val newBoard = board.map { it.copyOf() }.toTypedArray()
+                newBoard[row][col] = CheckersPiece.EMPTY
+                var promotedPiece = player
+                if (!isKing(piece)) {
+                    if ((player == CheckersPiece.RED && lr == 0) || (player == CheckersPiece.BLACK && lr == 7)) {
+                        promotedPiece = if (player == CheckersPiece.RED) CheckersPiece.RED_KING else CheckersPiece.BLACK_KING
+                    }
+                } else {
+                    promotedPiece = piece
+                }
+                newBoard[lr][lc] = promotedPiece
+                newBoard[mr][mc] = CheckersPiece.EMPTY
+
+                if (isKing(promotedPiece) != isKing(piece) || (isKing(piece) && promotedPiece == piece)) {
+                    val furtherJumps = getJumps(newBoard, lr, lc, player, forward, newVisited)
+                    if (furtherJumps.isNotEmpty()) {
+                        for (fj in furtherJumps) {
+                            jumps.add(CheckersMove(row, col, fj.toRow, fj.toCol,
+                                listOf(mr to mc) + fj.captures))
+                        }
+                    } else {
+                        jumps.add(baseMove)
                     }
                 } else {
                     jumps.add(baseMove)
                 }
-            } else {
-                jumps.add(baseMove)
             }
         }
         return jumps
