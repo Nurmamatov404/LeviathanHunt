@@ -45,6 +45,7 @@ class CheckersScreen(
     private var playerColor = if (isWhite) CheckersPiece.RED else CheckersPiece.BLACK
     private var circleTex: Texture? = null
     private var time = 0f
+    private val stateHistory = mutableListOf<CheckersState>()
 
     private var sw = 0f
     private var sh = 0f
@@ -173,6 +174,17 @@ class CheckersScreen(
         font.draw(batch, "◉ $rCount", sw * 0.12f, sh - ph * 0.72f)
         font.setColor(pieceBlack1)
         font.draw(batch, "◉ $bCount", sw * 0.75f, sh - ph * 0.72f)
+
+        if (!state.gameOver && stateHistory.isNotEmpty() && !aiThinking && state.currentPlayer == playerColor && network == null) {
+            val undoX = sw - 50f
+            val undoY = sh - ph + 4f
+            val undoW = 44f
+            val undoH = ph - 8f
+            font.data.setScale(ph / 24f)
+            font.setColor(gold)
+            font.draw(batch, "↩", undoX + 6f, undoY + undoH * 0.7f)
+            buttons.add(ButtonDef("↩", Rectangle(undoX, undoY, undoW, undoH)) { undo() })
+        }
     }
 
     private fun drawBoard(boardX: Float, boardY: Float, boardSize: Float) {
@@ -368,15 +380,12 @@ class CheckersScreen(
     private val buttons = mutableListOf<ButtonDef>()
 
     private fun handleInput(boardX: Float, boardY: Float, boardSize: Float) {
-        if (state.gameOver) {
-            if (Gdx.input.justTouched()) {
-                val mx = Gdx.input.x.toFloat()
-                val my = sh - Gdx.input.y.toFloat()
-                buttons.toList().forEach { if (it.rect.contains(mx, my)) it.action() }
-            }
-            buttons.clear()
-            return
+        if (Gdx.input.justTouched()) {
+            val mx = Gdx.input.x.toFloat()
+            val my = sh - Gdx.input.y.toFloat()
+            buttons.toList().forEach { if (it.rect.contains(mx, my)) it.action() }
         }
+        if (state.gameOver) { buttons.clear(); return }
         buttons.clear()
         if (state.currentPlayer != playerColor) return
         if (aiThinking) return
@@ -418,7 +427,24 @@ class CheckersScreen(
         }
     }
 
+    private fun saveState() {
+        stateHistory.add(state.copy(
+            board = state.board.map { it.copyOf() }.toTypedArray()
+        ))
+    }
+
+    private fun undo() {
+        if (stateHistory.isEmpty()) return
+        state = stateHistory.removeLast()
+        selectedRow = -1; selectedCol = -1; validMoves = emptyList(); lastMove = null
+        if (isVsAI && stateHistory.isNotEmpty()) {
+            state = stateHistory.removeLast()
+            selectedRow = -1; selectedCol = -1; validMoves = emptyList(); lastMove = null
+        }
+    }
+
     private fun executeMove(move: CheckersMove) {
+        saveState()
         val newState = checkersGame.applyMove(state, move)
         lastMove = move; state = newState
         network?.sendPacket(BoardGamePacket.Move(move.fromRow, move.fromCol, move.toRow, move.toCol,
