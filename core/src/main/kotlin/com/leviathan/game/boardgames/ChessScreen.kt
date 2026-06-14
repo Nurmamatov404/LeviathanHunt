@@ -320,8 +320,17 @@ class ChessScreen(
     private val buttons = mutableListOf<ButtonDef>()
 
     private fun handleInput(boardX: Float, boardY: Float, boardSize: Float) {
+        if (state.gameOver) {
+            if (Gdx.input.justTouched()) {
+                val mx = Gdx.input.x.toFloat()
+                val my = sh - Gdx.input.y.toFloat()
+                buttons.toList().forEach { if (it.rect.contains(mx, my)) it.action() }
+            }
+            buttons.clear()
+            return
+        }
         buttons.clear()
-        if (state.gameOver || state.whiteToMove != isWhite || aiThinking) return
+        if (state.whiteToMove != isWhite || aiThinking) return
 
         if (Gdx.input.justTouched()) {
             val mx = Gdx.input.x.toFloat()
@@ -419,5 +428,5 @@ class ChessScreen(
     override fun pause() {}
     override fun resume() {}
     override fun hide() {}
-    override fun dispose() { batch.dispose(); whiteTex.dispose(); font.dispose() }
+    override fun dispose() { batch.dispose(); whiteTex.dispose(); font.dispose(); network?.disconnect() }
 }

@@ -365,8 +365,16 @@ class CheckersScreen(
     private val buttons = mutableListOf<ButtonDef>()
 
     private fun handleInput(boardX: Float, boardY: Float, boardSize: Float) {
+        if (state.gameOver) {
+            if (Gdx.input.justTouched()) {
+                val mx = Gdx.input.x.toFloat()
+                val my = sh - Gdx.input.y.toFloat()
+                buttons.toList().forEach { if (it.rect.contains(mx, my)) it.action() }
+            }
+            buttons.clear()
+            return
+        }
         buttons.clear()
-        if (state.gameOver) return
         if (state.currentPlayer != playerColor) return
         if (aiThinking) return
 
@@ -461,5 +469,5 @@ class CheckersScreen(
     override fun pause() {}
     override fun resume() {}
     override fun hide() {}
-    override fun dispose() { batch.dispose(); whiteTex.dispose(); font.dispose(); circleTex?.dispose() }
+    override fun dispose() { batch.dispose(); whiteTex.dispose(); font.dispose(); circleTex?.dispose(); network?.disconnect() }
 }

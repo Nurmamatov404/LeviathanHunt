@@ -8,6 +8,7 @@ import com.leviathan.game.screens.GameScreen
 
 class LeviathanGame : ApplicationAdapter() {
     var currentScreen: GameScreen? = null
+    var playerName: String = "Player"
 
     override fun create() {
         setScreen(BoardGameMenuScreen(this))

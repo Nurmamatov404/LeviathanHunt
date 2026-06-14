@@ -42,7 +42,8 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
 
     private var currentScreen = BGScreen.MAIN
     private var selectedGame = BoardGameType.CHECKERS
-    private var playerName = "Player"
+    private var playerName get() = game.playerName
+        set(v) { game.playerName = v }
     private var typingName = false
     private var statusMsg = ""
     private var statusTimer = 0f
@@ -555,5 +556,5 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
     override fun pause() {}
     override fun resume() {}
     override fun hide() {}
-    override fun dispose() { batch.dispose(); whiteTex.dispose(); font.dispose(); titleFont.dispose(); bgNetwork.disconnect() }
+    override fun dispose() { batch.dispose(); whiteTex.dispose(); font.dispose(); titleFont.dispose() }
 }
