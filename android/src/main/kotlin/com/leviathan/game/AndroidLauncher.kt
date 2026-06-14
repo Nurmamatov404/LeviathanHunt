@@ -11,7 +11,7 @@ class AndroidLauncher : AndroidApplication() {
             useAccelerometer = false
             useCompass = false
             useGyroscope = false
-            numSamples = 2
+            useGL30 = false
             useWakelock = true
         }
         initialize(LeviathanGame(), config)
