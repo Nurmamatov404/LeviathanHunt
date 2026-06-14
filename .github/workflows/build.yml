@@ -1,0 +1,90 @@
+name: Build Leviathan Hunt APK
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build Debug APK
+        run: gradle android:assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LeviathanHunt-Android-${{ github.sha }}
+          path: android/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      - name: Upload Build Logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-Logs-${{ github.sha }}
+          path: |
+            **/build/reports/**
+            **/build/outputs/**/*.log
+          retention-days: 7
+
+  release:
+    name: Create Release
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: LeviathanHunt-Android-${{ github.sha }}
+
+      - name: Get short SHA
+        id: slug
+        run: echo "sha8=$(echo ${{ github.sha }} | cut -c1-8)" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}-${{ steps.slug.outputs.sha8 }}
+          name: "Leviathan Hunt v1.0.${{ github.run_number }}"
+          body: |
+            ## Leviathan Hunt - Android Build
+            
+            - Commit: ${{ github.sha }}
+            - Build: ${{ github.run_number }}
+            
+            ### How to install:
+            1. Download the APK below
+            2. Enable "Install from unknown sources"
+            3. Install and play!
+            
+            ### Controls:
+            - **Ship (Player 1):** WASD move, F=cannon, Q=harpoon, T=turbo, R=repair
+            - **Monster (Player 2):** WASD move, Space=up, Shift=down, 1-6=abilities
+          files: |
+            *.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
