@@ -70,6 +70,10 @@ tasks.register("copyNatives") {
                 from(zipTree(jar))
                 into(jniLibs)
                 include("lib/**")
+                eachFile {
+                    path = path.removePrefix("lib/")
+                }
+                includeEmptyDirs = false
             }
         }
     }
