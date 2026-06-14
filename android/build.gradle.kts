@@ -15,7 +15,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.leviathan.hunt"
+        applicationId = "com.leviathan.boardgames"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -54,11 +54,6 @@ dependencies {
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a")
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86")
     natives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64")
-    implementation("com.badlogicgames.gdx:gdx-freetype:$gdxVersion")
-    natives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-armeabi-v7a")
-    natives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-arm64-v8a")
-    natives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86")
-    natives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86_64")
 }
 
 tasks.register("copyNatives") {

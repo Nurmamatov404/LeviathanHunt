@@ -7,8 +7,8 @@ object DesktopLauncher {
     @JvmStatic
     fun main(args: Array<String>) {
         val config = Lwjgl3ApplicationConfiguration().apply {
-            setTitle("Leviathan Hunt")
-            setWindowedMode(1024, 600)
+            setTitle("Board Games")
+            setWindowedMode(800, 900)
             setForegroundFPS(60)
             useVsync(true)
         }
