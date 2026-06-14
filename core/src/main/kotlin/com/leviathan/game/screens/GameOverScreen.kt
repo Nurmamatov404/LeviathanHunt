@@ -21,20 +21,25 @@ class GameOverScreen(
     private lateinit var cam: OrthographicCamera
     private val buttons = mutableListOf<MenuScreen.ButtonDef>()
 
+    private val sw get() = Gdx.graphics.width.toFloat()
+    private val sh get() = Gdx.graphics.height.toFloat()
+
     override fun show() {
         batch = SpriteBatch()
         shape = ShapeRenderer()
         font = BitmapFont()
-        font.data.setScale(2f)
-        cam = OrthographicCamera(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
+        cam = OrthographicCamera(sw, sh)
         cam.setToOrtho(false)
 
-        val cx = Gdx.graphics.width / 2f
-        buttons.add(MenuScreen.ButtonDef("MAIN MENU", Rectangle(cx - 125f, 200f, 250f, 50f)) {
-            game.networkManager.disconnect()
-            game.setScreen(MenuScreen(game))
+        val bw = (sw * 0.5f).coerceIn(200f, 300f)
+        val bh = (sh * 0.08f).coerceIn(50f, 65f)
+        val gap = bh * 1.4f
+        val cx = sw / 2f
+
+        buttons.add(MenuScreen.ButtonDef("MAIN MENU", Rectangle(cx - bw/2, sh * 0.3f, bw, bh)) {
+            game.networkManager.disconnect(); game.setScreen(MenuScreen(game))
         })
-        buttons.add(MenuScreen.ButtonDef("EXIT", Rectangle(cx - 125f, 130f, 250f, 50f)) {
+        buttons.add(MenuScreen.ButtonDef("EXIT", Rectangle(cx - bw/2, sh * 0.3f - gap, bw, bh)) {
             Gdx.app.exit()
         })
     }
@@ -47,27 +52,29 @@ class GameOverScreen(
         shape.projectionMatrix = cam.combined
         batch.projectionMatrix = cam.combined
 
+        val bh = (sh * 0.08f).coerceIn(50f, 65f)
+
         shape.begin(ShapeRenderer.ShapeType.Filled)
         buttons.forEach { shape.setColor(0.15f, 0.4f, 0.8f, 0.9f); shape.rect(it.rect.x, it.rect.y, it.rect.width, it.rect.height) }
         shape.end()
 
         batch.begin()
-        font.data.setScale(2.5f)
+        font.data.setScale(sh / 200f)
         val winText = if (winner == game.playerRole) "VICTORY!" else "DEFEAT"
-        font.draw(batch, winText, Gdx.graphics.width / 2f - 80f, Gdx.graphics.height - 100f)
+        font.draw(batch, winText, sw / 2f - 90f, sh - 100f)
 
-        font.data.setScale(1.5f)
+        font.data.setScale(sh / 350f)
         val roleText = if (winner == PlayerRole.SHIP) "SHIP WINS" else "MONSTER WINS"
-        font.draw(batch, roleText, Gdx.graphics.width / 2f - 70f, Gdx.graphics.height - 150f)
-        font.draw(batch, reason, Gdx.graphics.width / 2f - 70f, Gdx.graphics.height - 190f)
+        font.draw(batch, roleText, sw / 2f - 80f, sh - 150f)
+        font.draw(batch, reason, sw / 2f - 80f, sh - 190f)
 
-        font.data.setScale(1.5f)
-        buttons.forEach { font.draw(batch, it.text, it.rect.x + 20f, it.rect.y + 35f) }
+        font.data.setScale(bh / 30f)
+        buttons.forEach { font.draw(batch, it.text, it.rect.x + it.rect.width * 0.15f, it.rect.y + it.rect.height * 0.65f) }
         batch.end()
 
         if (Gdx.input.justTouched()) {
             val mx = Gdx.input.x.toFloat()
-            val my = Gdx.graphics.height - Gdx.input.y.toFloat()
+            val my = sh - Gdx.input.y.toFloat()
             buttons.forEach { if (it.rect.contains(mx, my)) it.action() }
         }
     }

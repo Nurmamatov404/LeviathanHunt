@@ -22,6 +22,10 @@ class MenuScreen(private val game: LeviathanGame) : GameScreen {
     private var ipAddress = "192.168.43.1"
     private var statusMsg = ""
     private var typing = false
+    private var keyboardOpen = false
+
+    private val sw get() = Gdx.graphics.width.toFloat()
+    private val sh get() = Gdx.graphics.height.toFloat()
 
     data class ButtonDef(val text: String, val rect: Rectangle, val action: () -> Unit)
 
@@ -29,8 +33,7 @@ class MenuScreen(private val game: LeviathanGame) : GameScreen {
         batch = SpriteBatch()
         shape = ShapeRenderer()
         font = BitmapFont()
-        font.data.setScale(1.5f)
-        cam = OrthographicCamera(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
+        cam = OrthographicCamera(sw, sh)
         cam.setToOrtho(false)
         Gdx.input.inputProcessor = null
         rebuildButtons()
@@ -38,33 +41,33 @@ class MenuScreen(private val game: LeviathanGame) : GameScreen {
 
     private fun rebuildButtons() {
         buttons.clear()
-        val cx = Gdx.graphics.width / 2f
-        val bw = 250f
-        val bh = 50f
+        val cx = sw / 2f
+        val bw = (sw * 0.6f).coerceIn(200f, 350f)
+        val bh = (sh * 0.08f).coerceIn(50f, 70f)
+        val gap = bh * 1.4f
+        val startY = sh * 0.5f
 
         if (!showJoin) {
-            buttons.add(ButtonDef("CREATE GAME", Rectangle(cx - bw/2, 380f, bw, bh)) {
+            buttons.add(ButtonDef("CREATE GAME", Rectangle(cx - bw/2, startY + gap, bw, bh)) {
                 if (game.networkManager.startHost()) {
-                    statusMsg = "Hosting... Waiting for player"
-                    game.setScreen(LobbyScreen(game))
+                    statusMsg = "Hosting..."; game.setScreen(LobbyScreen(game))
                 } else statusMsg = "Failed to start host!"
             })
-            buttons.add(ButtonDef("JOIN GAME", Rectangle(cx - bw/2, 310f, bw, bh)) {
+            buttons.add(ButtonDef("JOIN GAME", Rectangle(cx - bw/2, startY, bw, bh)) {
                 showJoin = true; rebuildButtons()
             })
-            buttons.add(ButtonDef("EXIT", Rectangle(cx - bw/2, 240f, bw, bh)) {
+            buttons.add(ButtonDef("EXIT", Rectangle(cx - bw/2, startY - gap, bw, bh)) {
                 Gdx.app.exit()
             })
         } else {
-            buttons.add(ButtonDef("CONNECT", Rectangle(cx - bw/2, 310f, bw, bh)) {
+            buttons.add(ButtonDef("CONNECT", Rectangle(cx - bw/2, startY, bw, bh)) {
                 if (ipAddress.isBlank()) { statusMsg = "Enter IP"; return@ButtonDef }
-                statusMsg = "Connecting to $ipAddress..."
-                if (game.networkManager.connectToHost(ipAddress)) {
-                    game.setScreen(LobbyScreen(game))
-                } else statusMsg = "Connection failed!"
+                statusMsg = "Connecting..."; keyboardOpen = false
+                if (game.networkManager.connectToHost(ipAddress)) game.setScreen(LobbyScreen(game))
+                else statusMsg = "Connection failed!"
             })
-            buttons.add(ButtonDef("BACK", Rectangle(cx - bw/2, 240f, bw, bh)) {
-                showJoin = false; statusMsg = ""; rebuildButtons()
+            buttons.add(ButtonDef("BACK", Rectangle(cx - bw/2, startY - gap, bw, bh)) {
+                showJoin = false; statusMsg = ""; keyboardOpen = false; rebuildButtons()
             })
         }
     }
@@ -78,6 +81,9 @@ class MenuScreen(private val game: LeviathanGame) : GameScreen {
         shape.projectionMatrix = cam.combined
         batch.projectionMatrix = cam.combined
 
+        val bw = (sw * 0.6f).coerceIn(200f, 350f)
+        val bh = (sh * 0.08f).coerceIn(50f, 70f)
+
         shape.begin(ShapeRenderer.ShapeType.Filled)
         buttons.forEach { btn ->
             shape.setColor(0.15f, 0.4f, 0.8f, 0.9f)
@@ -86,31 +92,36 @@ class MenuScreen(private val game: LeviathanGame) : GameScreen {
         shape.end()
 
         batch.begin()
-        // Title
-        font.data.setScale(2.5f)
-        font.draw(batch, "LEVIATHAN HUNT", Gdx.graphics.width / 2f - 140f, Gdx.graphics.height - 60f)
-        font.data.setScale(1f)
-        font.draw(batch, "Asymmetric Multiplayer Survival", Gdx.graphics.width / 2f - 120f, Gdx.graphics.height - 90f)
+        font.data.setScale(sh / 300f)
+        font.draw(batch, "LEVIATHAN HUNT", sw / 2f - sw * 0.22f, sh - 40f)
+        font.data.setScale(sh / 500f)
+        font.draw(batch, "Asymmetric Multiplayer Survival", sw / 2f - sw * 0.2f, sh - 70f)
 
-        font.data.setScale(1.5f)
+        font.data.setScale(bh / 30f)
         buttons.forEach { btn ->
-            font.draw(batch, btn.text, btn.rect.x + 20f, btn.rect.y + 35f)
+            font.draw(batch, btn.text, btn.rect.x + btn.rect.width * 0.15f, btn.rect.y + btn.rect.height * 0.65f)
         }
 
         if (showJoin) {
-            font.data.setScale(1.2f)
-            font.draw(batch, "Host IP:", Gdx.graphics.width / 2f - 180f, 450f)
+            val inputY = sh * 0.78f
+            val inputH = bh * 0.8f
+            font.data.setScale(bh / 35f)
+            font.draw(batch, "Host IP:", sw / 4f, inputY + 20f)
             shape.begin(ShapeRenderer.ShapeType.Line)
             shape.setColor(1f, 1f, 1f, 1f)
-            shape.rect(Gdx.graphics.width / 2f - 150f, 400f, 300f, 40f)
+            shape.rect(sw / 4f, inputY - inputH, sw / 2f, inputH)
             shape.end()
-            font.draw(batch, ipAddress + if (typing) "|" else "",
-                Gdx.graphics.width / 2f - 140f, 430f)
+            shape.begin(ShapeRenderer.ShapeType.Filled)
+            shape.setColor(1f, 1f, 1f, 0.05f)
+            shape.rect(sw / 4f, inputY - inputH, sw / 2f, inputH)
+            shape.end()
+            val cursor = if ((System.currentTimeMillis() / 500) % 2 == 0L) "|" else ""
+            font.draw(batch, ipAddress + cursor, sw / 4f + 10f, inputY - 5f)
         }
 
         if (statusMsg.isNotEmpty()) {
-            font.data.setScale(1f)
-            font.draw(batch, statusMsg, Gdx.graphics.width / 2f - 100f, 150f)
+            font.data.setScale(bh / 30f)
+            font.draw(batch, statusMsg, sw / 2f - 100f, sh * 0.2f)
         }
         batch.end()
     }
@@ -120,21 +131,32 @@ class MenuScreen(private val game: LeviathanGame) : GameScreen {
             if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE) && ipAddress.isNotEmpty())
                 ipAddress = ipAddress.dropLast(1)
             for (c in '0'..'9') {
-                if (Gdx.input.isKeyJustPressed(Input.Keys.valueOf(c.toString())) ||
-                    Gdx.input.isKeyJustPressed(Input.Keys.valueOf("NUMPAD_$c"))) {
+                val key = try { Input.Keys.valueOf(c.toString()) } catch (_: Exception) { -1 }
+                if (key > 0 && Gdx.input.isKeyJustPressed(key)) {
                     if (ipAddress.length < 15) ipAddress += c
                 }
             }
             if (Gdx.input.isKeyJustPressed(Input.Keys.PERIOD) && ipAddress.length < 15) ipAddress += "."
             if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-                rebuildButtons()
-                buttons.firstOrNull()?.action?.invoke()
+                keyboardOpen = false
+                buttons.firstOrNull { it.text == "CONNECT" }?.action?.invoke()
             }
         }
 
         if (Gdx.input.justTouched()) {
             val mx = Gdx.input.x.toFloat()
-            val my = Gdx.graphics.height - Gdx.input.y.toFloat()
+            val my = sh - Gdx.input.y.toFloat()
+
+            if (showJoin) {
+                val inputY = sh * 0.78f
+                val inputH = (sh * 0.08f).coerceIn(50f, 70f) * 0.8f
+                val rect = Rectangle(sw / 4f, inputY - inputH, sw / 2f, inputH)
+                if (rect.contains(mx, my)) {
+                    keyboardOpen = true
+                    return
+                }
+            }
+
             buttons.forEach { if (it.rect.contains(mx, my)) it.action() }
         }
     }
