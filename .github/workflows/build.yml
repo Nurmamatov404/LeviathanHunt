@@ -29,24 +29,94 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build Debug APK
-        run: gradle android:assembleDebug --no-daemon
+        id: build
+        continue-on-error: true
+        run: |
+          gradle android:assembleDebug --no-daemon --info --stacktrace 2>&1 | tee build-output.txt
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "BUILD_STATUS=fail" >> $GITHUB_OUTPUT
+          else
+            echo "BUILD_STATUS=success" >> $GITHUB_OUTPUT
+            echo "BUILD_STATUS=success" >> $GITHUB_ENV
+          fi
 
-      - name: Upload APK
+      - name: Upload APK (on success)
+        if: steps.build.outputs.BUILD_STATUS == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: LeviathanHunt-Android-${{ github.sha }}
           path: android/build/outputs/apk/debug/*.apk
           retention-days: 30
 
-      - name: Upload Build Logs (on failure)
-        if: failure()
+      - name: Collect error details (on failure)
+        if: steps.build.outputs.BUILD_STATUS == 'fail'
+        id: errors
+        run: |
+          echo "## Build Failed" > error-report.md
+          echo "**Commit:** ${{ github.sha }}" >> error-report.md
+          echo "**Branch:** ${{ github.ref_name }}" >> error-report.md
+          echo "**Run:** ${{ github.run_number }}" >> error-report.md
+          echo "" >> error-report.md
+          echo "### Error Summary" >> error-report.md
+          echo '```' >> error-report.md
+          grep -i "error\|FAILED\|Exception\|at " build-output.txt | tail -50 >> error-report.md 2>/dev/null
+          echo '```' >> error-report.md
+          echo "" >> error-report.md
+          echo "### Full Build Log (last 100 lines)" >> error-report.md
+          echo '```' >> error-report.md
+          tail -100 build-output.txt >> error-report.md 2>/dev/null
+          echo '```' >> error-report.md
+
+      - name: Upload full build log (on failure)
+        if: steps.build.outputs.BUILD_STATUS == 'fail'
         uses: actions/upload-artifact@v4
         with:
-          name: Build-Logs-${{ github.sha }}
+          name: Full-Build-Log-${{ github.sha }}
           path: |
+            build-output.txt
             **/build/reports/**
             **/build/outputs/**/*.log
-          retention-days: 7
+            **/build/*.log
+          retention-days: 90
+
+      - name: Upload error report (on failure)
+        if: steps.build.outputs.BUILD_STATUS == 'fail'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Error-Report-${{ github.sha }}
+          path: error-report.md
+          retention-days: 90
+
+      - name: Create GitHub Issue on failure
+        if: steps.build.outputs.BUILD_STATUS == 'fail'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('error-report.md', 'utf8');
+            const shortSha = '${{ github.sha }}'.substring(0, 7);
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Build Failed: ${shortSha} — Leviathan Hunt APK`,
+              body: report + '\n\n---\n_This issue was automatically created by GitHub Actions._\n\n@Nurmamatov404 please share this error with your AI assistant to fix the code.',
+              labels: ['build-failure', 'auto-generated']
+            });
+
+      - name: Fail the job
+        if: steps.build.outputs.BUILD_STATUS == 'fail'
+        run: |
+          echo "============================================"
+          echo "  ❌ BUILD FAILED! ❌"
+          echo "============================================"
+          echo ""
+          echo "  Error report uploaded as artifact: Error-Report-${{ github.sha }}"
+          echo "  Full log uploaded as artifact: Full-Build-Log-${{ github.sha }}"
+          echo "  GitHub Issue created automatically."
+          echo ""
+          echo "  Send the error to your AI assistant to fix."
+          echo "============================================"
+          exit 1
 
   release:
     name: Create Release
@@ -69,19 +139,20 @@ jobs:
           tag_name: v1.0.${{ github.run_number }}-${{ steps.slug.outputs.sha8 }}
           name: "Leviathan Hunt v1.0.${{ github.run_number }}"
           body: |
-            ## Leviathan Hunt - Android Build
-            
+            ## Leviathan Hunt — Android Build
+
             - Commit: ${{ github.sha }}
             - Build: ${{ github.run_number }}
-            
+
             ### How to install:
             1. Download the APK below
             2. Enable "Install from unknown sources"
             3. Install and play!
-            
-            ### Controls:
-            - **Ship (Player 1):** WASD move, F=cannon, Q=harpoon, T=turbo, R=repair
-            - **Monster (Player 2):** WASD move, Space=up, Shift=down, 1-6=abilities
+
+            ### Controls (touch):
+            - **Left:** Virtual joystick for movement
+            - **Right:** Action buttons (Ship: FIRE/HARP/TURBO/REP | Monster: 6 abilities)
+            - **Monster vertical:** Swipe right side for depth
           files: |
             *.apk
           draft: false

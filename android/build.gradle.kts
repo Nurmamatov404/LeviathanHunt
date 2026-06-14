@@ -1,6 +1,6 @@
 plugins {
-    kotlin("android")
-    id("com.android.application")
+    kotlin("android") version "1.9.22"
+    id("com.android.application") version "8.2.2"
 }
 
 group = "com.leviathan.game"
