@@ -33,16 +33,16 @@ class ShipEntity(val modelBuilder: ModelBuilder) {
     fun build() {
         val hull = modelBuilder.createBox(6f, 2f, 3f,
             Material(ColorAttribute.createDiffuse(Color.BROWN)),
-            VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal)
+            (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong())
         val cabin = modelBuilder.createBox(2f, 1.5f, 2f,
             Material(ColorAttribute.createDiffuse(Color.GRAY)),
-            VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal)
+            (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong())
         val deck = modelBuilder.createBox(5f, 0.3f, 2.5f,
             Material(ColorAttribute.createDiffuse(Color.valueOf("8B4513"))),
-            VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal)
+            (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong())
         val cannon = modelBuilder.createCylinder(1.2f, 0.8f, 0.8f, 12,
             Material(ColorAttribute.createDiffuse(Color.DARK_GRAY)),
-            VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal)
+            (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong())
 
         instance = ModelInstance(hull)
         instance.transform.setToTranslation(position)
@@ -97,16 +97,16 @@ class MonsterEntity(val modelBuilder: ModelBuilder) {
     fun build() {
         val body = modelBuilder.createSphere(5f, 3f, 4f, 16, 16,
             Material(ColorAttribute.createDiffuse(Color.GREEN)),
-            VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal)
+            (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong())
         val head = modelBuilder.createSphere(2.5f, 2f, 2f, 12, 12,
             Material(ColorAttribute.createDiffuse(Color.valueOf("006400"))),
-            VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal)
+            (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong())
         val eye = modelBuilder.createSphere(0.5f, 0.5f, 0.5f, 8, 8,
             Material(ColorAttribute.createDiffuse(Color.RED)),
-            VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal)
+            (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong())
         val tentacle = modelBuilder.createCylinder(1f, 3f, 1f, 8,
             Material(ColorAttribute.createDiffuse(Color.valueOf("006400"))),
-            VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal)
+            (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong())
 
         instance = ModelInstance(body)
         instance.transform.setToTranslation(position)

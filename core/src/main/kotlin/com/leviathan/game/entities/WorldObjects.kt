@@ -21,7 +21,7 @@ class WorldObjects(private val modelBuilder: ModelBuilder) {
             -Constants.MAP_SIZE_X / 2f, Constants.WATER_LEVEL, Constants.MAP_SIZE_Z / 2f,
             0f, 1f, 0f,
             Material(ColorAttribute.createDiffuse(Color.valueOf("1a5276"))),
-            VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal
+            (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong()
         )
         waterInstance = ModelInstance(waterModel)
         waterInstance.transform.setToTranslation(0f, Constants.WATER_LEVEL, 0f)
@@ -43,9 +43,9 @@ class WorldObjects(private val modelBuilder: ModelBuilder) {
 
         for (pos in islandPositions) {
             val base = modelBuilder.createBox(30f, 5f, 30f, islandMat,
-                VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal)
+                (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong())
             val top = modelBuilder.createBox(25f, 3f, 25f, grassMat,
-                VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal)
+                (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong())
 
             val baseInst = ModelInstance(base)
             baseInst.transform.setToTranslation(pos.x, Constants.WATER_LEVEL - 2f, pos.z)
@@ -71,7 +71,7 @@ class WorldObjects(private val modelBuilder: ModelBuilder) {
 
         for (pos in reefPositions) {
             val reef = modelBuilder.createBox(8f, 3f, 8f, reefMat,
-                VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal)
+                (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal).toLong())
             val inst = ModelInstance(reef)
             inst.transform.setToTranslation(pos.x, pos.y, pos.z)
             objects.add(inst)

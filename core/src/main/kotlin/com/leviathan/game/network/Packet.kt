@@ -99,7 +99,7 @@ class AbilityActivatePacket : Packet(PacketType.ABILITY_ACTIVATE) {
 class DamagePacket : Packet(PacketType.DAMAGE) {
     var target: String = ""
     var damage: Float = 0f
-    var type: DamageType = DamageType.ENVIRONMENT
+    var damageType: DamageType = DamageType.ENVIRONMENT
 }
 
 class EntityStatePacket : Packet(PacketType.ENTITY_STATE) {
@@ -118,13 +118,13 @@ class ChatPacket : Packet(PacketType.CHAT) {
 }
 
 object PacketSerializer {
-    private val gson = Gson()
+    @PublishedApi internal val gson = Gson()
 
     fun serialize(packet: Packet): String = gson.toJson(packet) + "\n"
 
     inline fun <reified T : Packet> deserialize(json: String): T? {
         return try {
-            val type = gson.fromJson(JsonTypePacket::class.java, json).type
+            val type = gson.fromJson(json, JsonTypePacket::class.java).type
             when (type) {
                 PacketType.HANDSHAKE -> gson.fromJson(json, HandshakePacket::class.java)
                 PacketType.ROLE_SELECT -> gson.fromJson(json, RoleSelectPacket::class.java)
@@ -147,5 +147,5 @@ object PacketSerializer {
         }
     }
 
-    private class JsonTypePacket(val type: PacketType)
+    internal class JsonTypePacket(val type: PacketType)
 }
