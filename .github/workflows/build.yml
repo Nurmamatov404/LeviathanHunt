@@ -44,12 +44,19 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('android/**/*.gradle*', 'android/**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-v2-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/gradle.properties') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-gradle-v2-
 
       - name: Create error log directory
         run: mkdir -p build-reports
+
+      - name: Verify Gradle version
+        run: |
+          echo "Gradle version from wrapper:"
+          grep distributionUrl gradle/wrapper/gradle-wrapper.properties
+          echo "Actual Gradle version:"
+          ./gradlew --version 2>&1 | head -5
 
       - name: Build APK with full error capture
         id: build
