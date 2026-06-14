@@ -30,17 +30,17 @@ jobs:
 
       - name: Build Debug APK
         id: build
-        continue-on-error: true
         run: |
-          gradle android:assembleDebug --no-daemon --info --stacktrace 2>&1 | tee build-output.txt
-          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+          ./gradlew android:assembleDebug --no-daemon --info --stacktrace 2>&1 | tee build-output.txt
+          status=${PIPESTATUS[0]}
+          echo "status=$status" >> $GITHUB_OUTPUT
+          if [ $status -ne 0 ]; then
             echo "BUILD_STATUS=fail" >> $GITHUB_OUTPUT
           else
             echo "BUILD_STATUS=success" >> $GITHUB_OUTPUT
-            echo "BUILD_STATUS=success" >> $GITHUB_ENV
           fi
 
-      - name: Upload APK (on success)
+      - name: Upload APK
         if: steps.build.outputs.BUILD_STATUS == 'success'
         uses: actions/upload-artifact@v4
         with:
@@ -48,9 +48,8 @@ jobs:
           path: android/build/outputs/apk/debug/*.apk
           retention-days: 30
 
-      - name: Collect error details (on failure)
+      - name: Collect error details
         if: steps.build.outputs.BUILD_STATUS == 'fail'
-        id: errors
         run: |
           echo "## Build Failed" > error-report.md
           echo "**Commit:** ${{ github.sha }}" >> error-report.md
@@ -67,56 +66,17 @@ jobs:
           tail -100 build-output.txt >> error-report.md 2>/dev/null
           echo '```' >> error-report.md
 
-      - name: Upload full build log (on failure)
+      - name: Upload build log
         if: steps.build.outputs.BUILD_STATUS == 'fail'
         uses: actions/upload-artifact@v4
         with:
           name: Full-Build-Log-${{ github.sha }}
-          path: |
-            build-output.txt
-            **/build/reports/**
-            **/build/outputs/**/*.log
-            **/build/*.log
+          path: build-output.txt
           retention-days: 90
-
-      - name: Upload error report (on failure)
-        if: steps.build.outputs.BUILD_STATUS == 'fail'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Error-Report-${{ github.sha }}
-          path: error-report.md
-          retention-days: 90
-
-      - name: Create GitHub Issue on failure
-        if: steps.build.outputs.BUILD_STATUS == 'fail'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const fs = require('fs');
-            const report = fs.readFileSync('error-report.md', 'utf8');
-            const shortSha = '${{ github.sha }}'.substring(0, 7);
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `Build Failed: ${shortSha} — Leviathan Hunt APK`,
-              body: report + '\n\n---\n_This issue was automatically created by GitHub Actions._\n\n@Nurmamatov404 please share this error with your AI assistant to fix the code.',
-              labels: ['build-failure', 'auto-generated']
-            });
 
       - name: Fail the job
         if: steps.build.outputs.BUILD_STATUS == 'fail'
-        run: |
-          echo "============================================"
-          echo "  ❌ BUILD FAILED! ❌"
-          echo "============================================"
-          echo ""
-          echo "  Error report uploaded as artifact: Error-Report-${{ github.sha }}"
-          echo "  Full log uploaded as artifact: Full-Build-Log-${{ github.sha }}"
-          echo "  GitHub Issue created automatically."
-          echo ""
-          echo "  Send the error to your AI assistant to fix."
-          echo "============================================"
-          exit 1
+        run: exit 1
 
   release:
     name: Create Release
