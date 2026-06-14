@@ -13,7 +13,6 @@ class AndroidLauncher : AndroidApplication() {
             useGyroscope = false
             numSamples = 2
             useWakelock = true
-            hideStatusBar = true
         }
         initialize(LeviathanGame(), config)
     }
