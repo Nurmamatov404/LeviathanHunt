@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.math.Rectangle
 import com.leviathan.game.LeviathanGame
@@ -24,6 +25,7 @@ class ChessScreen(
     private lateinit var whiteTex: Texture
     private lateinit var font: BitmapFont
     private lateinit var cam: OrthographicCamera
+    private val layout = GlyphLayout()
 
     private val chessGame = ChessGame()
     private var state = ChessGame.newState()
@@ -284,12 +286,12 @@ class ChessScreen(
             font.data.setScale(sh / 140f)
             val glow = (kotlin.math.sin(time * 3f) * 0.15f + 0.85f).toFloat()
             font.setColor(resultColor.r * glow, resultColor.g * glow, resultColor.b * glow, 1f)
-            font.draw(batch, resultText, cx - font.getBounds(resultText).width / 2, sh * 0.6f)
+            font.draw(batch, resultText, cx - layout.setText(font, resultText).width / 2, sh * 0.6f)
 
             if (state.gameResult != null) {
                 font.data.setScale(sh / 300f)
                 font.setColor(0.8f, 0.8f, 0.8f, 0.7f)
-                font.draw(batch, state.gameResult, cx - font.getBounds(state.gameResult!!).width / 2, sh * 0.53f)
+                font.draw(batch, state.gameResult, cx - layout.setText(font, state.gameResult!!).width / 2, sh * 0.53f)
             }
 
             drawBtn("▶ PLAY AGAIN", cx - bw / 2, sh * 0.33f, bw, bh, Color(0.2f, 0.75f, 0.3f, 0.95f))
@@ -306,7 +308,7 @@ class ChessScreen(
         batch.draw(whiteTex, x, y + h / 2f, w, h / 2f)
         font.data.setScale(h / 28f)
         font.setColor(1f, 1f, 1f, 1f)
-        val tw = font.getBounds(text).width
+        val tw = layout.setText(font, text).width
         font.draw(batch, text, x + w / 2 - tw / 2, y + h * 0.62f)
         buttons.add(ButtonDef(text, Rectangle(x, y, w, h), {
             if (text.contains("PLAY AGAIN")) rematch() else game.setScreen(BoardGameMenuScreen(game))

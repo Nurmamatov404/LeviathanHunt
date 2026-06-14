@@ -186,6 +186,7 @@ class ChessGame {
                     ChessPieceType.QUEEN -> addSlidingMoves(state, row, col, white, moves,
                         1 to 1, 1 to -1, -1 to 1, -1 to -1, 1 to 0, -1 to 0, 0 to 1, 0 to -1)
                     ChessPieceType.KING -> addKingMoves(state, row, col, white, moves)
+                    ChessPieceType.EMPTY -> {}
                 }
             }
         }
