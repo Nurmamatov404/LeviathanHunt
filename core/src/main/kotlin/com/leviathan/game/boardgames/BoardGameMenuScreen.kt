@@ -531,13 +531,17 @@ class BoardGameMenuScreen(private val game: LeviathanGame) : GameScreen {
             if (typingName) {
                 if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE) && playerName.isNotEmpty())
                     playerName = playerName.dropLast(1)
-                for (c in 'A'..'Z') {
-                    val key = try { Input.Keys.valueOf(c.toString()) } catch (_: Exception) { -1 }
-                    if (key > 0 && Gdx.input.isKeyJustPressed(key) && playerName.length < 15) playerName += c
-                }
-                for (c in 'a'..'z') {
-                    val key = try { Input.Keys.valueOf(c.toString().uppercase()) } catch (_: Exception) { -1 }
-                    if (key > 0 && Gdx.input.isKeyJustPressed(key) && playerName.length < 15) playerName += c
+                val keyCodes = mapOf(
+                    'A' to Input.Keys.A, 'B' to Input.Keys.B, 'C' to Input.Keys.C, 'D' to Input.Keys.D,
+                    'E' to Input.Keys.E, 'F' to Input.Keys.F, 'G' to Input.Keys.G, 'H' to Input.Keys.H,
+                    'I' to Input.Keys.I, 'J' to Input.Keys.J, 'K' to Input.Keys.K, 'L' to Input.Keys.L,
+                    'M' to Input.Keys.M, 'N' to Input.Keys.N, 'O' to Input.Keys.O, 'P' to Input.Keys.P,
+                    'Q' to Input.Keys.Q, 'R' to Input.Keys.R, 'S' to Input.Keys.S, 'T' to Input.Keys.T,
+                    'U' to Input.Keys.U, 'V' to Input.Keys.V, 'W' to Input.Keys.W, 'X' to Input.Keys.X,
+                    'Y' to Input.Keys.Y, 'Z' to Input.Keys.Z
+                )
+                for ((c, key) in keyCodes) {
+                    if (Gdx.input.isKeyJustPressed(key) && playerName.length < 15) playerName += c
                 }
                 if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && playerName.length < 15) playerName += " "
             }
