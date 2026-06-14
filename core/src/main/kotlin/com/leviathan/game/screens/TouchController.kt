@@ -159,7 +159,7 @@ class TouchController(private val role: PlayerRole) : InputAdapter() {
         return false
     }
 
-    override fun touchUp(x: Int, y: Int, pointer: Int): Boolean {
+    override fun touchUp(x: Int, y: Int, pointer: Int, button: Int): Boolean {
         if (pointer == joystickTouchId) {
             joystickActive = false
             joystickTouchId = -1

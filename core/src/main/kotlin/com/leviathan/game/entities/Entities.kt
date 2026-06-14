@@ -89,6 +89,7 @@ class MonsterEntity(val modelBuilder: ModelBuilder) {
     var energy = Constants.MONSTER_MAX_ENERGY
     var maxEnergy = Constants.MONSTER_MAX_ENERGY
     var speed = Constants.MONSTER_SPEED
+    var isDisabled = false
 
     lateinit var model: Model
     lateinit var instance: ModelInstance
